@@ -2,9 +2,10 @@
 # peer_to_peer_network
 
 from tracker import Tracker
-import socket
-from blockchain_wallet import BlockchainWallet
+from socket import *
+# from blockchain_wallet import BlockchainWallet
 import pickle
+import time
 
 
 class Peer:
@@ -12,13 +13,10 @@ class Peer:
         self.tracker_address = tracker_addr
         self.peer_socket = None
         self.connections = []
-        self.blockchain = BlockchainWallet()
+        # self.blockchain = BlockchainWallet()
 
 
         # tracker should have its own class
-
-
-
 
     def connect_tracker(self):
         try:
@@ -47,10 +45,6 @@ class Peer:
             if peer_address != self.my_address:
                 self.connect_to_peer(peer_address)
 
-
-
-
-
     def add_connection(self, peer):
         # Add a new peer to the network
         self.tracker.append(peer)
@@ -77,3 +71,32 @@ class Peer:
         # Ping peers to verify their activity
         pass
 
+
+
+if __name__ == "__main__":
+    try:
+        tracker_address = ('127.0.0.1', 50000)
+        node_socket = socket(AF_INET, SOCK_DGRAM)
+        
+        # Send a message to the tracker to indicate presence
+        node_socket.sendto(b'INA', tracker_address)
+        
+        print("Connected to tracker.")
+
+        data = node_socket.recv(1024)
+        list = pickle.loads(data)
+        print("list :", list)
+        while True:
+            node_socket.sendto(b'ALIVE', tracker_address)
+            print("sent")
+            time.sleep(2)
+
+
+        
+        # Do whatever actions are required for the peer
+        # ...
+        
+    except KeyboardInterrupt:
+        print("Closing connection to tracker...")
+        node_socket.close()
+        print("Connection closed.")
