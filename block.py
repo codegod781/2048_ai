@@ -1,5 +1,6 @@
 # block
 import hashlib
+import pickle
 
 class Block:
     def __init__(self, number, nonce, data, previous_hash):
@@ -18,6 +19,7 @@ class Block:
             self.nonce += 1
             self.hash = self.calculate_hash()
             if self.hash.startswith(mined_signature):
+                block_data = pickle.dumps(self)
+                block_with_header = b"BLOCK:" + block_data
                 print("Block mined with hash: ", self.hash)
-                break
-        
+                return block_with_header
