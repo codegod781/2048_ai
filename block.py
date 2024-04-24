@@ -3,7 +3,7 @@ import hashlib
 import pickle
 
 class Block:
-    def __init__(self, number, nonce, data, previous_hash):
+    def __init__(self, number, data, previous_hash):
         self.number = number # Position of block
         self.nonce = 0  # Nonce for mining
         self.data = data  # Transactions between peers
@@ -17,7 +17,7 @@ class Block:
     def mine_block(self, mined_signature):
         while True:
             self.nonce += 1
-            self.hash = self.calculate_hash()
+            self.calculate_hash()
             if self.hash.startswith(mined_signature):
                 block_data = pickle.dumps(self)
                 block_with_header = b"BLOCK:" + block_data
