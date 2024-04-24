@@ -3,10 +3,10 @@ import hashlib
 import pickle
 
 class Block:
-    def __init__(self, number, data, previous_hash):
+    def __init__(self, number, transactions, ledger, previous_hash):
         self.number = number # Position of block
         self.nonce = 0  # Nonce for mining
-        self.data = ([data[0]],{data[1]})  # Transactions between peers, data[0] is the set transactions, data[1] is the ledger
+        self.data = ([transactions],{ledger})  # Transactions between peers
         self.previous_hash = previous_hash  # Hash of the previous block
         self.hash = None  # Hash of the current block (to be calculated)
 
