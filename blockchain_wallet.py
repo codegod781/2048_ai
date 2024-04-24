@@ -20,7 +20,8 @@ class BlockchainWallet:
         # Receive data in the form of a block, blockchain, or message
         headers = {
             b"BLOCK:": len(b"BLOCK:"),
-            b"BLOCKCHAIN:": len(b"BLOCKCHAIN:")
+            b"BLOCKCHAIN:": len(b"BLOCKCHAIN:"),
+            b"GET_BLOCKCHAIN": len(b"GET_BLOCKCHAIN")
         }
 
         header_length = None
