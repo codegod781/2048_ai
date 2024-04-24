@@ -49,10 +49,7 @@ class BlockchainWallet:
                 print(f"{RED}Error: Expected sequence number {len(self.blockchain)} but received {block.number}{RESET}")
                 return (node_address, b"GET_BLOCKCHAIN") # At this point we know we don't have the longest chain anymore so there is a fork
         elif header == b"BLOCKCHAIN":
-            self.blockchain = data
-            for block in self.blockchain:
-                data = block.data
-                
+            self.blockchain = data          
             return None
         elif header == b"GET_BLOCKCHAIN":
             return (node_address, self.blockchain)
