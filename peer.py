@@ -4,7 +4,7 @@
 import threading
 from tracker import Tracker
 from socket import *
-# from blockchain_wallet import BlockchainWallet
+from blockchain_wallet import BlockchainWallet
 import pickle
 import time
 
@@ -15,6 +15,7 @@ class Peer:
         self.node_socket = socket(AF_INET, SOCK_DGRAM)
         self.port = self.node_socket.getsockname()[1]
         self.tracker_address = ('127.0.0.1', 50000)
+        self.blockchain_wallet = BlockchainWallet(mining_complexity=2)
         # self.peer_socket = socket(AF_INET, SOCK_DGRAM)
         # self.peer_address = ('127.0.0.1', 50001)
         # self.my_port = self.peer_socket.getsockname()
@@ -65,25 +66,27 @@ class Peer:
                 time.sleep(2)
 
     def receive_from_peers(self):
-<<<<<<< Updated upstream
         print("recieving")
         while True:
             data, _ = self.node_socket.recvfrom(1024)
             decoded_data = pickle.loads(data)
             header = decoded_data[0]
             payload = decoded_data[1]
-            if header == b'LIST':
+        
+            if header == b'TRACKER': #up-to-date list from tracker
                 i=0
                 self.connections.clear()
                 for entry in payload:
                     self.connections.append((entry[0], entry[1]))
                 print("list :", self.connections)
             if header == b'PEER':
+                print("Node "self.node_socket.getsockname)
+                BlockchainWallet.receive_data(payload, ((self.node_socket.getsockname()[0], self.node_socket.getsockname()[1])))
                 print(payload)
-=======
-        # Receive messages from peers
-        pass
->>>>>>> Stashed changes
+
+
+
+                
 
     def compare_last_hash(self):
         # Compare the last hash in each blockchain against peers

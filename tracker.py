@@ -19,7 +19,7 @@ class Tracker:
             if data == b'HELLO':
                 entry = [addr[0], addr[1], 0]
                 self.online.append(entry)
-                b = b'LIST'
+                b = b'TRACKER'
                 message_to_peers = (b, self.online)
                 pickled_list = pickle.dumps(message_to_peers)
                 for peer in self.online:
@@ -36,7 +36,7 @@ class Tracker:
                         print("KILLING:", peer[1])
                         #remove peer 
                         self.online.remove(peer)
-                        b = b'LIST'
+                        b = b'TRACKER'
                         message_to_peers = (b, self.online)
                         pickled_list = pickle.dumps(message_to_peers) 
                         for peer in self.online:
