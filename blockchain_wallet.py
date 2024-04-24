@@ -9,7 +9,6 @@ RESET = '\033[0m'
 
 class BlockchainWallet:
     def __init__(self, mining_complexity):
-        self.ledger = {}  # Initialize an empty ledger
         self.blockchain = []  # Initialize an empty blockchain (list of blocks)
         if mining_complexity > 0:
             self.mined_signature = '0' * mining_complexity
@@ -38,10 +37,6 @@ class BlockchainWallet:
             if block.number == len(self.blockchain) + 1:
                 if block.hash.startswith(self.mined_signature):
                     if block.previous_hash.startswith(self.mined_signature):
-                        from_node = block.data[0]
-                        to_node = block.data[1]
-                        amount = block.data[2]
-                        self.update_ledger(from_node, to_node, amount)
                         self.blockchain.append(block)
                         return None
                     else:
@@ -50,21 +45,18 @@ class BlockchainWallet:
                 else:
                     print(f"{RED}Error: block's hash starts with {block.hash[:len(self.mined_signature)]}{RESET}")
                     return None
-        
             elif block.number > len(self.blockchain) + 1:
                 print(f"{RED}Error: Expected sequence number {len(self.blockchain)} but received {block.number}{RESET}")
-                return (node_address, "GET_BLOCKCHAIN") # At this point we know we don't have the longest chain anymore so there is a fork
+                return (node_address, b"GET_BLOCKCHAIN") # At this point we know we don't have the longest chain anymore so there is a fork
         elif header == b"BLOCKCHAIN":
             self.blockchain = data
+            for block in self.blockchain:
+                data = block.data
+                
             return None
         elif header == b"GET_BLOCKCHAIN":
             return (node_address, self.blockchain)
         else:
-            print("Unknown header received.")  
-
-    def update_ledger(self, from_node, to_node, amount):
-        self.ledger[from_node] -= amount
-        self.ledger[to_node] += amount
-
+            print("Unknown header received.")
 
 

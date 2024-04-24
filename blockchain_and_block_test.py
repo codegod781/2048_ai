@@ -25,9 +25,10 @@ if __name__ == "__main__":
     print(f"New Ledger: {blockchain.ledger}")
 
     # Blockchain Request Test:
-    request = b"BLOCKCHAIN"
-    blockchain.receive_data(request)
+    request = b"GET_BLOCKCHAIN"
+    response = blockchain.receive_data(request, 12345)
+    print(f"{response}")
 
-    
+
 
     
