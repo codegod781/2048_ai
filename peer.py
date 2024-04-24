@@ -65,6 +65,7 @@ class Peer:
                 time.sleep(2)
 
     def receive_from_peers(self):
+<<<<<<< Updated upstream
         print("recieving")
         while True:
             data, _ = self.node_socket.recvfrom(1024)
@@ -79,6 +80,10 @@ class Peer:
                 print("list :", self.connections)
             if header == b'PEER':
                 print(payload)
+=======
+        # Receive messages from peers
+        pass
+>>>>>>> Stashed changes
 
     def compare_last_hash(self):
         # Compare the last hash in each blockchain against peers
