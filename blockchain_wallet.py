@@ -57,7 +57,7 @@ class BlockchainWallet:
             self.blockchain = data
             return None
         elif header == b"GET_BLOCKCHAIN":
-            return self.blockchain
+            return (node_address, self.blockchain)
         else:
             print("Unknown header received.")  
 
