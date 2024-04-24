@@ -1,6 +1,7 @@
 
 # peer_to_peer_network
 
+import threading
 from tracker import Tracker
 from socket import *
 # from blockchain_wallet import BlockchainWallet
@@ -9,9 +10,15 @@ import time
 
 
 class Peer:
-    def __init__(self, tracker_addr):
-        self.tracker_address = tracker_addr
-        self.peer_socket = None
+    def __init__(self):
+
+        self.node_socket = socket(AF_INET, SOCK_DGRAM)
+        self.port = self.node_socket.getsockname()[1]
+        self.tracker_address = ('127.0.0.1', 50000)
+        # self.peer_socket = socket(AF_INET, SOCK_DGRAM)
+        # self.peer_address = ('127.0.0.1', 50001)
+        # self.my_port = self.peer_socket.getsockname()
+        # print("port : ", self.my_port) 
         self.connections = []
         # self.blockchain = BlockchainWallet()
 
@@ -19,32 +26,20 @@ class Peer:
         # tracker should have its own class
 
     def connect_tracker(self):
-        try:
-            # Create a socket object
-            self.peer_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            # Connect to the tracker
-            self.peer_socket.connect(self.tracker_address)
-            print("Connected to tracker at", self.tracker_address)
-            
-            # Notify tracker about joining the network
-            self.peer_socket.send(b"Hello!")
-            
-            # You can add more logic here depending on your protocol
-            
-        except Exception as e:
-            print("Error connecting to tracker:", e)
+        print("tracker addr: ", self.tracker_address)
+        self.node_socket.sendto(b'HELLO', self.tracker_address)
+        data, addr = self.node_socket.recvfrom(1024)
+        deserialized_data = pickle.loads(data)
+        header = deserialized_data[0]
+        print("header : ", header)
+        list = deserialized_data[1]
+        i=0
+        self.connections.clear()
+        for entry in list:
+            self.connections.append((entry[0], entry[1]))
+        print("list :", self.connections)
 
-        data = self.peer_socket.recv(1024)
-
-        # Break apart tracker
-        data = data = self.peer_socket.recv(1024)
-        active_peers = pickle.loads(data)
-
-        # Connect to each peer in the list
-        for peer_address in active_peers:
-            if peer_address != self.my_address:
-                self.connect_to_peer(peer_address)
-
+        
     def add_connection(self, peer):
         # Add a new peer to the network
         self.tracker.append(peer)
@@ -55,48 +50,72 @@ class Peer:
         self.tracker.pop(peer)
         pass
 
-    def broadcast_to_peers(self, message):
-        # Broadcast a message to all peers
-        pass
+    def broadcast_to_peers(self):
+        print("broadcasting")
+        print("my port is : ", self.node_socket.getsockname()[1])
+        while True:
+            for entry in self.connections:
+                if entry[1] != self.node_socket.getsockname()[1]:
+                    print('peer address: ', entry)
+                    b = b'PEER'
+                    message = "hello from " + str(self.node_socket.getsockname()[1])
+                    message_to_peers = (b, message)
+                    pickled_payload = pickle.dumps(message_to_peers) 
+                    self.node_socket.sendto(pickled_payload, entry)
+                time.sleep(2)
 
     def receive_from_peers(self):
-        # Receive messages from peers
-        pas
+        print("recieving")
+        while True:
+            data, _ = self.node_socket.recvfrom(1024)
+            decoded_data = pickle.loads(data)
+            header = decoded_data[0]
+            payload = decoded_data[1]
+            if header == b'LIST':
+                i=0
+                self.connections.clear()
+                for entry in payload:
+                    self.connections.append((entry[0], entry[1]))
+                print("list :", self.connections)
+            if header == b'PEER':
+                print(payload)
 
     def compare_last_hash(self):
         # Compare the last hash in each blockchain against peers
         pass
 
-    def ping_peers(self):
-        # Ping peers to verify their activity
-        pass
+    def ping_tracker(self, tracker_address, node_socket):
+
+        while True:
+            node_socket.sendto(b'ALIVE', tracker_address)
+            time.sleep(2)
 
 
 
 if __name__ == "__main__":
     try:
-        tracker_address = ('127.0.0.1', 50000)
-        node_socket = socket(AF_INET, SOCK_DGRAM)
-        
-        # Send a message to the tracker to indicate presence
-        node_socket.sendto(b'INA', tracker_address)
-        
-        print("Connected to tracker.")
+        peer = Peer()
+        peer.connect_tracker()
 
-        data = node_socket.recv(1024)
-        list = pickle.loads(data)
-        print("list :", list)
+
+        node_thread = threading.Thread(target = peer.ping_tracker, args=(peer.tracker_address, peer.node_socket,))
+        node_thread.start()   
+
+        peer_thread = threading.Thread(target = peer.receive_from_peers, args=())
+        peer_thread.start()
+
+        peer.broadcast_to_peers()
+
+        # peer_thread = threading.Thread(target = peer.broadcast_to_peers, args=())
+        # peer_thread.start()
+
+
+
+
         while True:
-            node_socket.sendto(b'ALIVE', tracker_address)
-            print("sent")
             time.sleep(2)
-
-
-        
-        # Do whatever actions are required for the peer
-        # ...
         
     except KeyboardInterrupt:
         print("Closing connection to tracker...")
-        node_socket.close()
+        peer.node_socket.close()
         print("Connection closed.")
