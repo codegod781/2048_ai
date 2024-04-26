@@ -2,6 +2,7 @@
 # peer_to_peer_network
 
 import threading
+from poker_player import Poker_Player
 from tracker import Tracker
 from socket import *
 from blockchain_wallet import BlockchainWallet
@@ -11,7 +12,7 @@ import time
 
 class Peer:
     def __init__(self):
-
+        self.player = Poker_Player()
         self.node_socket = socket(AF_INET, SOCK_DGRAM)
         self.port = self.node_socket.getsockname()[1]
         self.tracker_address = ('127.0.0.1', 50000)
@@ -40,7 +41,6 @@ class Peer:
             self.connections.append((entry[0], entry[1]))
         print("list :", self.connections)
 
-        
     def add_connection(self, peer):
         # Add a new peer to the network
         self.tracker.append(peer)
@@ -80,14 +80,14 @@ class Peer:
                     self.connections.append((entry[0], entry[1]))
                 print("list :", self.connections)
             if header == b'PEER':
-                print("Node "self.node_socket.getsockname)
-                BlockchainWallet.receive_data(payload, ((self.node_socket.getsockname()[0], self.node_socket.getsockname()[1])))
+                # print("Node ", self.node_socket.getsockname())
                 print(payload)
+                start_round = 1 #BlockchainWallet.receive_data(payload, ((self.node_socket.getsockname()[0], self.node_socket.getsockname()[1])))
+                if start_round == 1:
+                    poker_thread = threading.Thread(target=self.round_of_poker, args=())
+                    poker_thread.start()
 
-
-
-                
-
+          
     def compare_last_hash(self):
         # Compare the last hash in each blockchain against peers
         pass
@@ -99,6 +99,17 @@ class Peer:
             time.sleep(2)
 
 
+    def round_of_poker(self):
+        print("poker thread")
+            #ask for the players bet for the new round 
+            #send name and corresponding bet to all the other players
+            #Fill in a table that is each players bets for that round
+            #prompt to see if they won that round
+            #update players money count
+            #person that won the round mines a new block
+            #   the newly minted block contains the list of players and how much money each lost to the winner
+        pass
+
 
 if __name__ == "__main__":
     try:
@@ -109,16 +120,16 @@ if __name__ == "__main__":
         node_thread = threading.Thread(target = peer.ping_tracker, args=(peer.tracker_address, peer.node_socket,))
         node_thread.start()   
 
-        peer_thread = threading.Thread(target = peer.receive_from_peers, args=())
-        peer_thread.start()
+        receive_thread = threading.Thread(target = peer.receive_from_peers, args=())
+        receive_thread.start()
 
         peer.broadcast_to_peers()
 
-        # peer_thread = threading.Thread(target = peer.broadcast_to_peers, args=())
-        # peer_thread.start()
+        broadcast_thread = threading.Thread(target = peer.broadcast_to_peers, args=())
+        broadcast_thread.start()
 
 
-
+        
 
         while True:
             time.sleep(2)

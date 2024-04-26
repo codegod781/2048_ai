@@ -38,7 +38,7 @@ class BlockchainWallet:
                 if block.hash.startswith(self.mined_signature):
                     if block.previous_hash.startswith(self.mined_signature):
                         self.blockchain.append(block)
-                        return None
+                        return 1
                     else:
                         print(f"{RED}Error: Received block's previous hash starts with {block.previous_hash[:len(self.mined_signature)]}{RESET}")
                         return None
