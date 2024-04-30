@@ -17,12 +17,14 @@ class Tracker:
             
             #if you recieve a new entry
             if data == b'HELLO':
+                print("new entry")
                 entry = [addr[0], addr[1], 0]
                 self.online.append(entry)
-                b = b'TRACKER'
+                b = 'TRACKER'
                 message_to_peers = (b, self.online)
                 pickled_list = pickle.dumps(message_to_peers)
                 for peer in self.online:
+                    print("send to: ", peer)
                     node_socket.sendto(pickled_list, (peer[0], peer[1]))
 
             #if you recieve confirmation of alive
@@ -36,7 +38,7 @@ class Tracker:
                         print("KILLING:", peer[1])
                         #remove peer 
                         self.online.remove(peer)
-                        b = b'TRACKER'
+                        b = 'TRACKER'
                         message_to_peers = (b, self.online)
                         pickled_list = pickle.dumps(message_to_peers) 
                         for peer in self.online:

@@ -15,6 +15,7 @@ class Poker_Player:
         self.loss = None
         self.ledger =  BlockchainWallet(mining_complexity=2)
         self.hand = []
+        self.round = 1
         self.round_1 = []
         self.round_2 = []
         self.round_3 = []
