@@ -83,10 +83,8 @@ class Peer:
 
 
             if header == 'BET':
-                print(payload, '\n')
+                print('\n', payload, '\n')
                 self.player.round_1.append(payload)
-                
-
                 
 
 
@@ -97,19 +95,21 @@ class Peer:
             #send name and corresponding bet to all the other players
         bet_touple = (self.player.player_name, bet)
         self.broadcast_to_peers('BET', bet_touple)
+            #wait for all bets to be placed
         while len(self.player.round_1) < len(self.connections):
             pass
-        print("all players have bet this round")
+        print("all players have bet this round. Bets: ")
+
+
         self.player.round_1.append(bet_touple)
         print(self.player.round_1)
+        win =  self.player.did_you_win()
+        print("End of round")
 
-
-        
-            #Fill in a table that is each players bets for that round
-            #prompt to see if they won that round
-            #update players money count
-            #person that won the round mines a new block
-            #   the newly minted block contains the list of players and how much money each lost to the winner
+        if win == 'y':
+            pass
+            #MINE NEW BLOCK
+            # self.blockchain_wallet.
         pass
 
 
