@@ -38,6 +38,7 @@ class BlockchainWallet:
                 if block.hash.startswith(self.mined_signature):
                     if block.previous_hash.startswith(self.mined_signature):
                         self.blockchain.append(block)
+                        #print(f"Received a block with the following attribures:\nnumber = {block.number}\nnonce = {block.nonce}\ndata = {block.data}\nprevious_hash = {block.previous_hash}\nhash = {block.hash}")
                         return None
                     else:
                         print(f"{RED}Error: Received block's previous hash starts with {block.previous_hash[:len(self.mined_signature)]}{RESET}")
@@ -52,6 +53,7 @@ class BlockchainWallet:
             self.blockchain = data          
             return None
         elif header == b"GET_BLOCKCHAIN":
+            print("get blockchain")
             return (node_address, self.blockchain)
         else:
             print("Unknown header received.")

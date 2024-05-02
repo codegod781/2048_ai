@@ -9,15 +9,16 @@ class Poker_Player:
     def __init__(self):
         self.player_name = self.create_player()
         #Every player starts off initially with 100 dollars? We can make this an initial input aswell
-        self.money = 100
+        self.money = 0
         self.wins = 0
         self.loss = 0
         self.ledger =  BlockchainWallet(mining_complexity=2)
-        self.hand = []
+        # self.hand = []
         self.round = 1
         self.round_1 = []
-        self.round_2 = []
-        self.round_3 = []
+        self.round_1_done = []
+        # self.round_2 = []
+        # self.round_3 = []
 
 
     def create_player(self):
@@ -29,8 +30,12 @@ class Poker_Player:
     
     def place_bet(self):
         bet = input("Please enter amount to bet: ")
-        self.money = self.money - int(bet)
-        return bet
+        if not bet.isdigit() and bet.isdigit() > 0:
+            print("Please enter a valid bet.")
+            self.place_bet()
+        else:
+            self.money = self.money - int(bet)
+            return bet
     
     def did_you_win(self):
         while True:
@@ -48,5 +53,4 @@ class Poker_Player:
                 self.loss += 1
                 print("you now have $", self.money)
                 break
-        self.round_1.clear()
         return win

@@ -4,6 +4,7 @@
 import threading
 from poker_player import Poker_Player
 from tracker import Tracker
+from block import Block
 from socket import *
 from blockchain_wallet import BlockchainWallet
 import pickle
@@ -17,26 +18,33 @@ class Peer:
         self.port = self.node_socket.getsockname()[1]
         self.tracker_address = ('127.0.0.1', 50000)
         self.blockchain_wallet = BlockchainWallet(mining_complexity=2)
-        # self.peer_socket = socket(AF_INET, SOCK_DGRAM)
-        # self.peer_address = ('127.0.0.1', 50001)
-        # self.my_port = self.peer_socket.getsockname()
-        # print("port : ", self.my_port) 
         self.connections = []
-        # self.blockchain = BlockchainWallet()
+        self.playerlist = []
+        self.new_player = False
+      
 
 
-    def connect_tracker(self):
-        self.node_socket.sendto(b'HELLO', self.tracker_address)
+    def connect(self):
+        header = 'HELLO'
+        message = (header, self.player.player_name)
+        self.node_socket.sendto(pickle.dumps(message), self.tracker_address)
         data, _ = self.node_socket.recvfrom(1024)
         deserialized_data = pickle.loads(data)
         self.connections.clear()
         for entry in deserialized_data[1]:
-            if entry[1] != self.node_socket.getsockname()[1]:
-                self.connections.append((entry[0], entry[1]))
+            self.playerlist.append(entry[1])
+            if entry[0][1] != self.node_socket.getsockname()[1]:
+                self.connections.append((entry[0][0], entry[0][1]))
+        
+        message = ("I need blockchain")
+        self.broadcast_to_peers('CONNECT', message)
+                
+   
 
     def ping_tracker(self, tracker_address, node_socket):
         while True:
-            node_socket.sendto(b'ALIVE', tracker_address)
+            message = pickle.dumps(b'ALIVE')
+            node_socket.sendto(message, tracker_address)
             time.sleep(2)
 
     def add_connection(self, peer):
@@ -50,16 +58,17 @@ class Peer:
         pass
 
     def broadcast_to_peers(self, header, payload):
-        print("broadcasting")
-        for entry in self.connections:
+        # print("broadcasting")
+        for addr in self.connections:
+            # print("entry :", addr)
             message_to_peers = (header, payload)
             pickled_payload = pickle.dumps(message_to_peers) 
-            self.node_socket.sendto(pickled_payload, entry)
+            self.node_socket.sendto(pickled_payload, addr)
 
     def receive_from_peers(self):
         print("recieving")
         while True:
-            data, _ = self.node_socket.recvfrom(1024)
+            data, addr = self.node_socket.recvfrom(1024)
             decoded_data = pickle.loads(data)
             header = decoded_data[0]
             payload = decoded_data[1]
@@ -68,28 +77,44 @@ class Peer:
                 # print("recieved from tracker")
                 self.connections.clear()
                 for entry in payload:
-                    if entry[1] != self.node_socket.getsockname()[1]:
-                        self.connections.append((entry[0], entry[1]))
+                    self.playerlist.append(entry[1])
+                    if entry[0][1] != self.node_socket.getsockname()[1]:
+                        self.connections.append((entry[0][0], entry[0][1]))
                 # print("list :", self.connections)
 
+            if header == 'CONNECT':
+                self.new_player = True
+
+            if header == 'BLOCKCHAIN':
+                if len(self.blockchain_wallet.blockchain) == 0:
+                    self.blockchain_wallet.blockchain = payload
+                    print("blockchain received")
 
             if header == 'PEER':
-                print(payload)
-                BlockchainWallet.receive_data(payload, ((self.node_socket.getsockname()[0], self.node_socket.getsockname()[1])))
-                # start_round = 1
-                # if start_round == 1:
-                #     poker_thread = threading.Thread(target=self.round_of_poker, args=())
-                #     poker_thread.start()
-
-
+                # print(payload)
+                chain = self.blockchain_wallet.receive_data(payload, ((self.node_socket.getsockname()[0], self.node_socket.getsockname()[1])))
+                # print("message to wallet : ", payload[0])
+                # print("sending to : ", addr)
+                if payload[0] == b'GET_BLOCKCHAIN':
+                    pickled_payload = pickle.dumps(chain) 
+                    self.broadcast_to_peers('BET', pickled_payload)
+                    
             if header == 'BET':
-                print('\n', payload, '\n')
+                print(("recieved bet: "), payload)
                 self.player.round_1.append(payload)
-                
+
+            if header == 'DONE':
+                self.player.round_1_done.append(payload)
+
 
 
     def round_of_poker(self):
-        print("poker thread")
+        if self.new_player == True:
+            self.broadcast_to_peers('BLOCKCHAIN', self.blockchain_wallet.blockchain)
+            self.new_player = False
+
+
+        self.player.round_1.clear()
             #ask for the players bet for the new round 
         bet = self.player.place_bet()
             #send name and corresponding bet to all the other players
@@ -98,25 +123,44 @@ class Peer:
             #wait for all bets to be placed
         while len(self.player.round_1) < len(self.connections):
             pass
-        print("all players have bet this round. Bets: ")
+        print("all players have bet this round. Bets: \n",  self.player.round_1)
+        # self.player.round_1.append(bet_touple)
 
-
-        self.player.round_1.append(bet_touple)
-        print(self.player.round_1)
         win =  self.player.did_you_win()
+        self.broadcast_to_peers('DONE', win)
         print("End of round")
 
         if win == 'y':
-            pass
-            #MINE NEW BLOCK
-            # self.blockchain_wallet.
+            while len(self.player.round_1_done) < len(self.connections):
+                pass
+            # Insert order to mine blocks
+            for player in self.playerlist:
+                if player == self.player.player_name:
+                    break
+                time.sleep(5.0)
+            if len(self.blockchain_wallet.blockchain) == 0:
+                prev_hash = "00"
+            else:
+                prev_hash = self.blockchain_wallet.blockchain[-1].hash
+            number_of_winners = 0
+            for response in self.player.round_1_done:
+                if response == "y":
+                    number_of_winners += 1
+            if number_of_winners > 1:
+                for i in range(0, self.player.round_1):
+                    self.player.round_1[i] = (self.player.round_1[i][0], self.player.round_1[i][1] / number_of_winners)
+            my_block = Block(len(self.blockchain_wallet.blockchain)+1, self.player.round_1, prev_hash)
+            new_block = my_block.mine_block("00")
+            self.blockchain_wallet.receive_data(new_block, "127.0.0.1")
+            self.broadcast_to_peers('PEER', new_block)
+
         pass
 
 
 if __name__ == "__main__":
     try:
         peer = Peer()
-        peer.connect_tracker()
+        peer.connect()
 
 
         node_thread = threading.Thread(target = peer.ping_tracker, args=(peer.tracker_address, peer.node_socket,))

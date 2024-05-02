@@ -14,36 +14,35 @@ class Tracker:
 
         while not self.stop_event.is_set():
             data, addr = node_socket.recvfrom(2048)
-            
+            data = pickle.loads(data)
             #if you recieve a new entry
-            if data == b'HELLO':
+            if data[0] == 'HELLO':
                 print("new entry")
                 entry = [addr[0], addr[1], 0]
-                self.online.append(entry)
+                self.online.append((entry, data[1]))
                 b = 'TRACKER'
                 message_to_peers = (b, self.online)
                 pickled_list = pickle.dumps(message_to_peers)
                 for peer in self.online:
                     print("send to: ", peer)
-                    node_socket.sendto(pickled_list, (peer[0], peer[1]))
+                    node_socket.sendto(pickled_list, (peer[0][0], peer[0][1]))
 
             #if you recieve confirmation of alive
             if data == b'ALIVE':
                 for peer in self.online:
-                    peer[2]=peer[2]+1
-                    if  addr[1] == peer[1]:
-                        peer[2] = 0
-                        print("ALIVE:", peer[1])
-                    if  peer[2] == 5:
-                        print("KILLING:", peer[1])
+                    peer[0][2]=peer[0][2]+1
+                    if  addr[1] == peer[0][1]:
+                        peer[0][2] = 0
+                        print("ALIVE:", peer[0][1])
+                    if  peer[0][2] == 5:
+                        print("KILLING:", peer[0][1])
                         #remove peer 
                         self.online.remove(peer)
                         b = 'TRACKER'
                         message_to_peers = (b, self.online)
                         pickled_list = pickle.dumps(message_to_peers) 
                         for peer in self.online:
-                            node_socket.sendto(pickled_list, (peer[0], peer[1]))
-
+                            node_socket.sendto(pickled_list, (peer[0][0], peer[0][1]))
 
             print(self.online)
             time.sleep(1)
