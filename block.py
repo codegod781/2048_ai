@@ -6,7 +6,7 @@ class Block:
     def __init__(self, number, transactions, previous_hash):
         self.number = number # Position of block
         self.nonce = 0  # Nonce for mining
-        print(f"Data contains: {transactions}")
+        # print(f"Data contains: {transactions}")
         self.data = transactions  # Transactions between peers
         self.previous_hash = previous_hash  # Hash of the previous block
         self.hash = None  # Hash of the current block (to be calculated)
@@ -22,7 +22,7 @@ class Block:
             if self.hash.startswith(mined_signature):
                 block_data = pickle.dumps(self)
                 block_with_header = b"BLOCK:" + block_data
-                print("Block mined with hash: ", self.hash)
+                # print("Block mined with hash: ", self.hash)
                 return block_with_header
             
 

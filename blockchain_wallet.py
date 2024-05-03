@@ -53,9 +53,15 @@ class BlockchainWallet:
             self.blockchain = data          
             return None
         elif header == b"GET_BLOCKCHAIN":
-            print("get blockchain")
             return (node_address, self.blockchain)
         else:
             print("Unknown header received.")
+
+    def print_wallet(self):
+        for block in self.blockchain:
+            print( "\nblock number = ", block.number)
+            print( "Nonce  = ", block.nonce) 
+            print( "Data   = ", block.data)
+            print( "Previous Hash = ", block.previous_hash, "Cureent Hash = ", block.hash)
 
 

@@ -109,51 +109,61 @@ class Peer:
 
 
     def round_of_poker(self):
+        self.player.round_1.clear()
+
         if self.new_player == True:
             self.broadcast_to_peers('BLOCKCHAIN', self.blockchain_wallet.blockchain)
             self.new_player = False
 
 
-        self.player.round_1.clear()
-            #ask for the players bet for the new round 
         bet = self.player.place_bet()
-            #send name and corresponding bet to all the other players
         bet_touple = (self.player.player_name, bet)
         self.broadcast_to_peers('BET', bet_touple)
-            #wait for all bets to be placed
+        
         while len(self.player.round_1) < len(self.connections):
             pass
         print("all players have bet this round. Bets: \n",  self.player.round_1)
-        # self.player.round_1.append(bet_touple)
 
         win =  self.player.did_you_win()
         self.broadcast_to_peers('DONE', win)
-        print("End of round")
 
         if win == 'y':
-            while len(self.player.round_1_done) < len(self.connections):
+            self.winner()
+
+        self.blockchain_wallet.print_wallet()
+
+        print("End of round")
+            
+
+
+    def winner(self):
+        while len(self.player.round_1_done) < len(self.connections):
                 pass
             # Insert order to mine blocks
-            for player in self.playerlist:
-                if player == self.player.player_name:
-                    break
-                time.sleep(5.0)
-            if len(self.blockchain_wallet.blockchain) == 0:
-                prev_hash = "00"
-            else:
-                prev_hash = self.blockchain_wallet.blockchain[-1].hash
-            number_of_winners = 0
-            for response in self.player.round_1_done:
-                if response == "y":
-                    number_of_winners += 1
-            if number_of_winners > 1:
-                for i in range(0, self.player.round_1):
-                    self.player.round_1[i] = (self.player.round_1[i][0], self.player.round_1[i][1] / number_of_winners)
-            my_block = Block(len(self.blockchain_wallet.blockchain)+1, self.player.round_1, prev_hash)
-            new_block = my_block.mine_block("00")
-            self.blockchain_wallet.receive_data(new_block, "127.0.0.1")
-            self.broadcast_to_peers('PEER', new_block)
+        for player in self.playerlist:
+            if player == self.player.player_name:
+                break
+            time.sleep(1.0)
 
+        if len(self.blockchain_wallet.blockchain) == 0:
+            prev_hash = "00"
+        else:
+            prev_hash = self.blockchain_wallet.blockchain[-1].hash
+        number_of_winners = 0
+        for response in self.player.round_1_done:
+            if response == "y":
+                number_of_winners += 1
+        if number_of_winners > 1:
+            for i in range(0, self.player.round_1):
+                self.player.round_1[i] = (self.player.round_1[i][0], self.player.round_1[i][1] / number_of_winners)
+        
+        data_to_add = str(self.player.player_name) + " recieved (from, amount)" + str(self.player.round_1)
+        my_block = Block(len(self.blockchain_wallet.blockchain)+1, data_to_add, prev_hash)
+        new_block = my_block.mine_block("00")
+        self.blockchain_wallet.receive_data(new_block, "127.0.0.1")
+        self.broadcast_to_peers('PEER', new_block)
+
+    def new_data(self):
         pass
 
 
