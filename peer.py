@@ -22,8 +22,6 @@ class Peer:
         self.playerlist = []
         self.new_player = False
       
-
-
     def connect(self):
         header = 'HELLO'
         message = (header, self.player.player_name)
@@ -38,11 +36,9 @@ class Peer:
         
         message = ("I need blockchain")
         self.broadcast_to_peers('CONNECT', message)
-                
-   
 
     def ping_tracker(self, tracker_address, node_socket):
-        while True:
+        while not exit_event.is_set():
             message = pickle.dumps(b'ALIVE')
             node_socket.sendto(message, tracker_address)
             time.sleep(2)
@@ -67,7 +63,7 @@ class Peer:
 
     def receive_from_peers(self):
         print("recieving")
-        while True:
+        while not exit_event.is_set():
             data, addr = self.node_socket.recvfrom(1024)
             decoded_data = pickle.loads(data)
             header = decoded_data[0]
@@ -106,21 +102,32 @@ class Peer:
             if header == 'DONE':
                 self.player.round_1_done.append(payload)
 
-
+            if header == 'REPLAY':
+                self.player.replay_queue.append(payload)
 
     def round_of_poker(self):
+        
         self.player.round_1.clear()
+        self.player.replay_queue.clear()
+        self.blockchain_wallet.print_wallet()
+
 
         if self.new_player == True:
             self.broadcast_to_peers('BLOCKCHAIN', self.blockchain_wallet.blockchain)
             self.new_player = False
 
 
+        if len(self.connections) < 1:
+            print("Waiting for more players...")
+            while len(self.connections) < 1:
+                pass
         bet = self.player.place_bet()
         bet_touple = (self.player.player_name, bet)
+        self.player.round_1.append(bet_touple)
         self.broadcast_to_peers('BET', bet_touple)
         
-        while len(self.player.round_1) < len(self.connections):
+        while len(self.player.round_1) < len(self.connections) + 2 and len(self.player.round_1) == 1:
+            time.sleep(1.0)
             pass
         print("all players have bet this round. Bets: \n",  self.player.round_1)
 
@@ -129,16 +136,24 @@ class Peer:
 
         if win == 'y':
             self.winner()
+        else:
+            self.player.loss += 1
 
-        self.blockchain_wallet.print_wallet()
 
         print("End of round")
-            
 
+        exit = input("Would you like to play another round (y/n): ")
+        self.broadcast_to_peers('REPLAY', exit)
+        if exit == 'n':
+            self.node_socket.sendto(pickle.dumps('kill'), (self.node_socket.getsockname()[0],self.node_socket.getsockname()[1]))
+            return 1
+        else:
+            while lne(self.player.replay_queue
+            return 0
 
     def winner(self):
         while len(self.player.round_1_done) < len(self.connections):
-                pass
+            pass
             # Insert order to mine blocks
         for player in self.playerlist:
             if player == self.player.player_name:
@@ -149,48 +164,56 @@ class Peer:
             prev_hash = "00"
         else:
             prev_hash = self.blockchain_wallet.blockchain[-1].hash
-        number_of_winners = 0
+        number_of_winners = 1
+
         for response in self.player.round_1_done:
             if response == "y":
                 number_of_winners += 1
         if number_of_winners > 1:
-            for i in range(0, self.player.round_1):
-                self.player.round_1[i] = (self.player.round_1[i][0], self.player.round_1[i][1] / number_of_winners)
-        
+            for i in range(0, len(self.player.round_1)):
+                self.player.round_1[i] = (self.player.round_1[i][0], int(self.player.round_1[i][1]) / number_of_winners)
+
+        self.player.calculate_winnings()
+
+
+
         data_to_add = str(self.player.player_name) + " recieved (from, amount)" + str(self.player.round_1)
         my_block = Block(len(self.blockchain_wallet.blockchain)+1, data_to_add, prev_hash)
         new_block = my_block.mine_block("00")
         self.blockchain_wallet.receive_data(new_block, "127.0.0.1")
         self.broadcast_to_peers('PEER', new_block)
 
-    def new_data(self):
-        pass
+
 
 
 if __name__ == "__main__":
-    try:
-        peer = Peer()
-        peer.connect()
+    peer = Peer()
+    peer.connect()
 
+    exit_event = threading.Event()
 
-        node_thread = threading.Thread(target = peer.ping_tracker, args=(peer.tracker_address, peer.node_socket,))
-        node_thread.start()   
+    node_thread = threading.Thread(target = peer.ping_tracker, args=(peer.tracker_address, peer.node_socket,))
+    node_thread.start()   
 
-        receive_thread = threading.Thread(target = peer.receive_from_peers, args=())
-        receive_thread.start()
+    receive_thread = threading.Thread(target = peer.receive_from_peers, args=())
+    receive_thread.start()
 
+    while True:
+        exit = peer.round_of_poker()
+        if exit == 1:
+            exit_event.set()
+            break
+        time.sleep(2)
 
-        # peer.broadcast_to_peers('PEER',"hello")
-
-
-
+    print("Joining Threads...")
+    node_thread.join()
+    receive_thread.join()
+    print("Joined Threads... Exiting Program")
         
-
-        while True:
-            peer.round_of_poker()
-            time.sleep(2)
         
-    except KeyboardInterrupt:
-        print("Closing connection to tracker...")
-        peer.node_socket.close()
-        print("Connection closed.")
+    # except:
+    #     node_thread.join()
+    #     receive_thread.join()
+    #     print("Closing connection to tracker...")
+    #     peer.node_socket.close()
+    #     print("Connection closed.")
