@@ -143,7 +143,7 @@ class Peer:
                 if header == 'REPLAY':
                     self.player.replay_queue.append(payload)
 
-            except TimeoutError:
+            except:
                 pass
 
     def round_of_poker(self):
