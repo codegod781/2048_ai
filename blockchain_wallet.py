@@ -9,17 +9,18 @@ RESET = '\033[0m'
 
 class BlockchainWallet:
     """
-    Class representing a blockchain wallet.
+    Represents a blockchain wallet for managing blocks and data.
 
     Attributes:
-    - blockchain: List of blocks in the blockchain.
-    - mined_signature: Signature required for a block to be considered mined.
+        blockchain: List of blocks in the blockchain.
+        mined_signature: Signature required for a block to be considered mined.
     """
     def __init__(self, mining_complexity):
         """
-        Initialize a BlockchainWallet object.
+        Initializes a BlockchainWallet object.
 
-        :param mining_complexity: Complexity level for mining (number of leading zeros in hash).
+        Args:
+            mining_complexity (int): Complexity level for mining (number of leading zeros in hash).
         """
         self.blockchain = []  # Initialize an empty blockchain (list of blocks)
         if mining_complexity > 0:
@@ -29,11 +30,14 @@ class BlockchainWallet:
 
     def receive_data(self, pickled_data, node_address):
         """
-        Receive data and process it based on the header.
+        Receives data and processes it based on the header.
 
-        :param pickled_data: Data received.
-        :param node_address: Address of the sending node.
-        :return: None or (node_address, data) tuple.
+        Args:
+            pickled_data (bytes): Data received.
+            node_address (tuple): Address of the sending node.
+
+        Returns:
+            tuple: A tuple containing node_address and data if applicable, otherwise None.
         """
         # Receive data in the form of a block, blockchain, or message
         headers = {

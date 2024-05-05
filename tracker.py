@@ -6,11 +6,11 @@ import sys
 
 class Tracker:
     """
-    Class to manage peers and their connection states.
+    Manages peers and their connection states.
 
     Attributes:
-    - online: List of tuples containing active peer information and their connection states.
-    - stop_event: Event to signal termination of the peer manager thread.
+        online (list): List of tuples containing active peer information and their connection states.
+        stop_event (threading.Event): Event to signal termination of the peer manager thread.
     """
     def __init__(self):
         """
@@ -25,7 +25,8 @@ class Tracker:
         """
         Manage incoming peer connections and handle ALIVE confirmations.
 
-        :param node_socket: Socket object for communication with peers.
+        Args:
+            node_socket (socket): Socket object for communication with peers.
         """
         node_socket.settimeout(3)
 

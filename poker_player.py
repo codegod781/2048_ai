@@ -5,22 +5,22 @@ from blockchain_wallet import BlockchainWallet
 
 class Poker_Player:
     """
-    Class representing a poker player.
+    Represents a poker player.
 
     Attributes:
-    - player_name: Name of the player.
-    - money: Amount of money the player has.
-    - wins: Number of rounds the player has won.
-    - loss: Number of rounds the player has lost.
-    - ledger: Blockchain wallet for the player.
-    - round: Current round number.
-    - round_1: List to store bets made in the first round.
-    - round_1_done: List to store completed bets from the first round.
-    - replay_queue: Queue for replaying rounds.
+        player_name (str): The player's name.
+        money (int): The amount of money the player has.
+        wins (int): The number of rounds the player has won.
+        loss (int): The number of rounds the player has lost.
+        ledger (BlockchainWallet): The blockchain wallet for the player.
+        round (int): The current round number.
+        round_1 (list): A list to store bets made in the first round.
+        round_1_done (list): A list to store completed bets from the first round.
+        replay_queue (list): A queue for replaying rounds.
     """
     def __init__(self):
         """
-        Initialize a Poker_Player object.
+        Initializes a Poker_Player object.
         """
         self.player_name = self.create_player()
         #Every player starts off initially with 100 dollars? We can make this an initial input aswell
@@ -36,9 +36,10 @@ class Poker_Player:
 
     def create_player(self):
         """
-        Prompt the user for their player name and return it.
+        Prompts the user for their player name and returns it.
 
-        :return: The player's name.
+        Returns:
+            str: The player's name.
         """
         # Prompt the user for their player name
         player_name = input("Please enter your player name: ")
@@ -47,9 +48,10 @@ class Poker_Player:
     
     def place_bet(self):
         """
-        Prompt the player to place a bet.
+        Prompts the player to place a bet.
 
-        :return: The amount of the bet.
+        Returns:
+            int: The amount of the bet.
         """
         bet = input("Please enter amount to bet: \n")
         while True:
@@ -67,9 +69,10 @@ class Poker_Player:
             
     def did_you_win(self):
         """
-        Prompt the player to indicate whether they won the round.
+        Prompts the player to indicate whether they won the round.
 
-        :return: 'y' if the player won, 'n' otherwise.
+        Returns:
+            str: 'y' if the player won, 'n' otherwise.
         """
         win = ''
         while win != 'y' and win != 'n':
@@ -78,8 +81,7 @@ class Poker_Player:
 
     def calculate_winnings(self):
         """
-        Calculate the player's winnings for the round and update the player's money.
-
+        Calculates the player's winnings for the round and updates the player's money.
         """
         self.wins += 1
         total_winnings = 0

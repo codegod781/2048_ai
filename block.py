@@ -3,14 +3,18 @@ import hashlib
 import pickle
 
 class Block:
-    def __init__(self, number, transactions, previous_hash):
-        """
-        Initialize a Block object.
+    """
+    Represents a block in a blockchain.
 
-        :param number: Position of the block.
-        :param transactions: List of transactions between peers.
-        :param previous_hash: Hash of the previous block.
-        """
+    Attributes:
+        number (int): The position of the block.
+        nonce (int): Nonce for mining.
+        data (list): List of transactions between peers.
+        previous_hash (str): Hash of the previous block.
+        hash (str): Hash of the current block (to be calculated).
+    """
+    def __init__(self, number, transactions, previous_hash):
+        
         self.number = number # Position of block
         self.nonce = 0  # Nonce for mining
         # print(f"Data contains: {transactions}")
@@ -20,17 +24,20 @@ class Block:
 
     def calculate_hash(self):
         """
-        Calculate the hash of the block based on its attributes.
+        Calculates the hash of the block based on its attributes.
         """
         encoded_block = f"{self.number}{self.nonce}{self.data}{self.previous_hash}{self.hash}".encode()
         self.hash = hashlib.sha256(encoded_block).hexdigest()
     
     def mine_block(self, mined_signature):
         """
-        Mine the block until the hash starts with the specified signature.
+        Mines the block until the hash starts with the specified signature.
 
-        :param mined_signature: Signature to be matched for mining.
-        :return: The mined block with its header.
+        Args:
+            mined_signature (str): Signature to be matched for mining.
+
+        Returns:
+            bytes: The mined block with its header.
         """
         while True:
             self.nonce += 1

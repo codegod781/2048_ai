@@ -13,7 +13,28 @@ import sys
 
 
 class Peer:
+    """
+    Represents a peer in a peer-to-peer network for a poker game.
+
+    Attributes:
+        player (Poker_Player): Player associated with this peer.
+        node_socket (socket): Socket for communication with other peers.
+        port (int): Port number of the peer's socket.
+        tracker_address (tuple): Address of the tracker server.
+        blockchain_wallet (BlockchainWallet): Wallet for managing blockchain.
+        connections (list): List of peer connections.
+        playerlist (list): List of players in the network.
+        new_player (bool): Flag indicating if a new player joined.
+        in_progess (int): Flag indicating if a round is in progress.
+    """
     def __init__(self, tracker_address, tracker_port):
+        """
+        Initialize a Peer object.
+
+        Args:
+            tracker_address (str): IP address of the tracker server.
+            tracker_port (int): Port number of the tracker server.
+        """
         self.player = Poker_Player()
         self.node_socket = socket(AF_INET, SOCK_DGRAM)
         self.port = self.node_socket.getsockname()[1]
@@ -26,6 +47,9 @@ class Peer:
         self.node_socket.settimeout(5)
       
     def connect(self):
+        """
+        Connect to the tracker server and other peers.
+        """
         header = 'HELLO'
         message = (header, self.player.player_name)
         self.node_socket.sendto(pickle.dumps(message), self.tracker_address)
@@ -42,12 +66,26 @@ class Peer:
         self.broadcast_to_peers('CONNECT', message)
 
     def ping_tracker(self, tracker_address, node_socket):
+        """
+        Periodically ping the tracker server to indicate alive status.
+
+        Args:
+            tracker_address (tuple): Address of the tracker server.
+            node_socket (socket): Socket for communication with the tracker server.
+        """
         while not exit_event.is_set():
             message = pickle.dumps(b'ALIVE')
             node_socket.sendto(message, tracker_address)
             time.sleep(0.5)
 
     def broadcast_to_peers(self, header, payload):
+        """
+        Broadcast a message to all connected peers.
+
+        Args:
+            header (str): Header of the message.
+            payload (str): Payload of the message.
+        """
         # print("broadcasting")
         for addr in self.connections:
             # print("entry :", addr)
@@ -56,6 +94,9 @@ class Peer:
             self.node_socket.sendto(pickled_payload, addr)
 
     def receive_from_peers(self):
+        """
+        Receive messages from connected peers.
+        """
         # print("recieving")
         while not exit_event.is_set():
             try:
@@ -106,6 +147,9 @@ class Peer:
                 pass
 
     def round_of_poker(self):
+        """
+        Conduct a round of poker.
+        """
         print("New round")
 
         self.player.round_1.clear()
