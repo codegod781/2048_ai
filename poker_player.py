@@ -1,5 +1,6 @@
 # poker game
 import threading
+import sys
 from blockchain_wallet import BlockchainWallet
 
 class Poker_Player:
@@ -26,21 +27,23 @@ class Poker_Player:
     
     def place_bet(self):
         bet = input("Please enter amount to bet: \n")
-        if not bet.isdigit() or int(bet) <= 0 :
-            print("Please enter a valid bet.")
-            self.place_bet()
-        elif (self.money-int(bet)) < 0:
-            print("Insufficient funds")
-            self.place_bet()
-        else:
-            self.money = self.money - int(bet)
-            return bet
+        while True:
+            if not bet.isdigit() or int(bet) <= 0 :
+                print("Please enter a valid bet.")
+                bet = input("Please enter amount to bet: \n")
+            elif (self.money-int(bet)) < 0:
+                print("Insufficient funds")
+                bet = input("Please enter amount to bet: \n")
+            else:
+                break
+        self.money = self.money - int(bet)
+        print(f"THE BET IS: {bet}")
+        return bet
             
     def did_you_win(self):
-        win = input("Did you win the round? (y/n): \n")
-        if win == 'n':
-            self.loss += 1
-            print("you now have $", self.money)
+        win = ''
+        while win != 'y' and win != 'n':
+            win = input("Did you win the round? (y/n): \n")
         return win
 
     def calculate_winnings(self):
