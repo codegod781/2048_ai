@@ -22,7 +22,8 @@ class Peer:
         self.connections = []
         self.playerlist = []
         self.new_player = False
-        # self.node_socket.settimeout(5)
+        self.in_progess = 0
+        self.node_socket.settimeout(5)
       
     def connect(self):
         header = 'HELLO'
@@ -134,7 +135,7 @@ class Peer:
         while len(self.player.round_1) < len(self.playerlist):
             time.sleep(1.0)
             pass
-
+        self.in_progess = 1
         print("All players have bet this round. Bets: \n",  self.player.round_1)
 
         win =  self.player.did_you_win()
