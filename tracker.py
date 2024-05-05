@@ -11,41 +11,49 @@ class Tracker:
         self.stop_event = threading.Event()
 
     def peer_manager(self, node_socket):
+        node_socket.settimeout(3)
 
         while not self.stop_event.is_set():
-            data, addr = node_socket.recvfrom(2048)
-            data = pickle.loads(data)
-            #if you recieve a new entry
-            if data[0] == 'HELLO':
-                print("new entry")
-                entry = [addr[0], addr[1], 0]
-                self.online.append((entry, data[1]))
-                b = 'TRACKER'
-                message_to_peers = (b, self.online)
-                pickled_list = pickle.dumps(message_to_peers)
-                for peer in self.online:
-                    print("send to: ", peer)
-                    node_socket.sendto(pickled_list, (peer[0][0], peer[0][1]))
+            data = None
+            try:
+                data, addr = node_socket.recvfrom(2048)
+            
+                data = pickle.loads(data)
+                #if you recieve a new entry
+                if data[0] == 'HELLO':
+                    print("new entry")
+                    entry = [addr[0], addr[1], 0]
+                    self.online.append((entry, data[1]))
+                    b = 'TRACKER'
+                    message_to_peers = (b, self.online)
+                    pickled_list = pickle.dumps(message_to_peers)
+                    for peer in self.online:
+                        print("send to: ", peer)
+                        node_socket.sendto(pickled_list, (peer[0][0], peer[0][1]))
 
-            #if you recieve confirmation of alive
-            if data == b'ALIVE':
-                for peer in self.online:
-                    peer[0][2]=peer[0][2]+1
-                    if  addr[1] == peer[0][1]:
-                        peer[0][2] = 0
-                        print("ALIVE:", peer[0][1])
-                    if  peer[0][2] == 5:
-                        print("KILLING:", peer[0][1])
-                        #remove peer 
-                        self.online.remove(peer)
-                        b = 'TRACKER'
-                        message_to_peers = (b, self.online)
-                        pickled_list = pickle.dumps(message_to_peers) 
-                        for peer in self.online:
-                            node_socket.sendto(pickled_list, (peer[0][0], peer[0][1]))
-
+                #if you recieve confirmation of alive
+                if data == b'ALIVE':
+                    for peer in self.online:
+                        peer[0][2]=peer[0][2]+1
+                        if  addr[1] == peer[0][1]:
+                            print("updating peer : ", peer[0][1])
+                            print("recieved address : " , addr[1])
+                            peer[0][2] = 0
+                            print("ALIVE:", peer[0][1])
+                        if  peer[0][2] == 5:
+                            print("KILLING:", peer[0][1])
+                            #remove peer 
+                            self.online.remove(peer)
+                            b = 'TRACKER'
+                            message_to_peers = (b, self.online)
+                            pickled_list = pickle.dumps(message_to_peers) 
+                            for peer in self.online:
+                                node_socket.sendto(pickled_list, (peer[0][0], peer[0][1]))
+            except:
+                self.online.clear()
+                pass
             print(self.online)
-            time.sleep(1)
+            # time.sleep(0.1)
             
 
 if __name__ == "__main__":

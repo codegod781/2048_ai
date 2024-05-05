@@ -1,5 +1,6 @@
 # poker game
 import threading
+import sys
 from blockchain_wallet import BlockchainWallet
 
 class Poker_Player:
@@ -10,13 +11,11 @@ class Poker_Player:
         self.wins = 0
         self.loss = 0
         self.ledger =  BlockchainWallet(mining_complexity=2)
-        # self.hand = []
         self.round = 1
         self.round_1 = []
         self.round_1_done = []
         self.replay_queue = []
-        # self.round_2 = []
-        # self.round_3 = []
+
 
     def create_player(self):
         # Prompt the user for their player name
@@ -26,21 +25,23 @@ class Poker_Player:
     
     def place_bet(self):
         bet = input("Please enter amount to bet: \n")
-        if not bet.isdigit() or int(bet) <= 0 :
-            print("Please enter a valid bet.")
-            self.place_bet()
-        elif (self.money-int(bet)) < 0:
-            print("Insufficient funds")
-            self.place_bet()
-        else:
-            self.money = self.money - int(bet)
-            return bet
+        while True:
+            if not bet.isdigit() or int(bet) <= 0 :
+                print("Please enter a valid bet.")
+                bet = input("Please enter amount to bet: \n")
+            elif (self.money-int(bet)) < 0:
+                print("Insufficient funds")
+                bet = input("Please enter amount to bet: \n")
+            else:
+                break
+        self.money = self.money - int(bet)
+        # print(f"THE BET IS: {bet}")
+        return bet
             
     def did_you_win(self):
-        win = input("Did you win the round? (y/n): \n")
-        if win == 'n':
-            self.loss += 1
-            print("you now have $", self.money)
+        win = ''
+        while win != 'y' and win != 'n':
+            win = input("Did you win the round? (y/n): \n")
         return win
 
     def calculate_winnings(self):
@@ -50,6 +51,5 @@ class Poker_Player:
             total_winnings = total_winnings + int(bets[1])
         self.money = self.money + total_winnings
         print("You won $", total_winnings)
-        print("you now have $", self.money)
         
             

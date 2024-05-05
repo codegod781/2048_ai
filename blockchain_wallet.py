@@ -59,7 +59,7 @@ class BlockchainWallet:
 
     def print_wallet(self):
         for block in self.blockchain:
-            print( "\nblock number = ", block.number)
+            print( "\nBlock number = ", block.number)
             print( "Nonce  = ", block.nonce) 
             print( "Data   = ", block.data)
             print( "Previous Hash = ", block.previous_hash, "Cureent Hash = ", block.hash)
