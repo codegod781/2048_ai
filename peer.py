@@ -13,11 +13,11 @@ import sys
 
 
 class Peer:
-    def __init__(self):
+    def __init__(self, tracker_address, tracker_port):
         self.player = Poker_Player()
         self.node_socket = socket(AF_INET, SOCK_DGRAM)
         self.port = self.node_socket.getsockname()[1]
-        self.tracker_address = ('127.0.0.1', 50004)
+        self.tracker_address = (tracker_address, tracker_port)
         self.blockchain_wallet = BlockchainWallet(mining_complexity=2)
         self.connections = []
         self.playerlist = []
@@ -120,7 +120,6 @@ class Peer:
             self.broadcast_to_peers('BLOCKCHAIN', self.blockchain_wallet.blockchain)
             self.new_player = False
 
-
         if len(self.connections) < 1:
             print("Waiting for more players...")
             while len(self.connections) < 1:
@@ -202,40 +201,46 @@ class Peer:
 
 
 if __name__ == "__main__":
-    try:
-        peer = Peer()
-        peer.connect()
+    arguments = sys.argv
+    if len(arguments) != 3:
+        print(f"Invalid Arguments: Call using 'python3 peer.py <tracker address> <tracker port>")
+    else:
+        try:
+            tracker_address = arguments[1]
+            tracker_port = int(arguments[2])
+            peer = Peer(tracker_address, tracker_port)
+            peer.connect()
 
-        exit_event = threading.Event()
+            exit_event = threading.Event()
 
-        node_thread = threading.Thread(target = peer.ping_tracker, args=(peer.tracker_address, peer.node_socket,))
-        node_thread.start()   
+            node_thread = threading.Thread(target = peer.ping_tracker, args=(peer.tracker_address, peer.node_socket,))
+            node_thread.start()   
 
-        receive_thread = threading.Thread(target = peer.receive_from_peers, args=())
-        receive_thread.start()
+            receive_thread = threading.Thread(target = peer.receive_from_peers, args=())
+            receive_thread.start()
 
-        while True:
-            exit = peer.round_of_poker()
-            if exit == 1:
-                exit_event.set()
-                break
-            time.sleep(2)
+            while True:
+                exit = peer.round_of_poker()
+                if exit == 1:
+                    exit_event.set()
+                    break
+                time.sleep(4)
 
-        print("Joining Threads...")
-        node_thread.join()
-        receive_thread.join()
-        print("Joined Threads... Exiting Program")
+            print("Joining Threads...")
+            node_thread.join()
+            receive_thread.join()
+            print("Joined Threads... Exiting Program")
 
-    except KeyboardInterrupt:
-        exit_event.set()
-        print("\nJoining Threads...")
-        node_thread.join(timeout = 5)
-        receive_thread.join(timeout = 5)
-        print("Joined Threads... Exiting Program")
-        
-    # except:
-    #     node_thread.join()
-    #     receive_thread.join()
-    #     print("Closing connection to tracker...")
-    #     peer.node_socket.close()
-    #     print("Connection closed.")
+        except KeyboardInterrupt:
+            exit_event.set()
+            print("\nJoining Threads...")
+            node_thread.join(timeout = 5)
+            receive_thread.join(timeout = 5)
+            print("Joined Threads... Exiting Program")
+            
+        # except:
+        #     node_thread.join()
+        #     receive_thread.join()
+        #     print("Closing connection to tracker...")
+        #     peer.node_socket.close()
+        #     print("Connection closed.")
