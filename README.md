@@ -1,7 +1,7 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/-Lgd7v9y)
 # CSEE 4119 Spring 2024, Class Project
 ## Team name: Net-not-working
-## Team members (name, GitHub username): (Patrick Cronin, codegod781), (Damian Washel, Reaver16), (Jonathan Eng, Jochengi)
+## Team members: (Patrick Cronin, codegod781), (Damian Washel, Reaver16), (Jonathan Eng, Jochengi)
 ## 
 
 First, run tracker.py using the IP address and port given to us.  Then, run peer.py for each peer and enter the player's name.  Once at least two players have joined, players can place a bet.  After all players on the network have placed a bet, they respond to the prompt asking if the player won the round or not.  After all players on the network have responded, if there is only one winner, then that player wins the sum of all bets placed for that round.  If there are two or more winners, the money is split evenly among the winners.  The player is then prompted with whether they would like to play again.  If the players would like to play again, they continue placing bets after enough players are ready.  More players can join during the betting stage of each round.
