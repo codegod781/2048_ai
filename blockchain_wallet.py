@@ -8,7 +8,19 @@ RED = '\033[91m'
 RESET = '\033[0m'
 
 class BlockchainWallet:
+    """
+    Class representing a blockchain wallet.
+
+    Attributes:
+    - blockchain: List of blocks in the blockchain.
+    - mined_signature: Signature required for a block to be considered mined.
+    """
     def __init__(self, mining_complexity):
+        """
+        Initialize a BlockchainWallet object.
+
+        :param mining_complexity: Complexity level for mining (number of leading zeros in hash).
+        """
         self.blockchain = []  # Initialize an empty blockchain (list of blocks)
         if mining_complexity > 0:
             self.mined_signature = '0' * mining_complexity
@@ -16,6 +28,13 @@ class BlockchainWallet:
             self.mined_signature = '0'
 
     def receive_data(self, pickled_data, node_address):
+        """
+        Receive data and process it based on the header.
+
+        :param pickled_data: Data received.
+        :param node_address: Address of the sending node.
+        :return: None or (node_address, data) tuple.
+        """
         # Receive data in the form of a block, blockchain, or message
         headers = {
             b"BLOCK:": len(b"BLOCK:"),
@@ -58,6 +77,9 @@ class BlockchainWallet:
             print("Unknown header received.")
 
     def print_wallet(self):
+        """
+        Print the contents of the blockchain wallet.
+        """
         for block in self.blockchain:
             print( "\nBlock number = ", block.number)
             print( "Nonce  = ", block.nonce) 
