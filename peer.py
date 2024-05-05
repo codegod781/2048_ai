@@ -153,7 +153,7 @@ class Peer:
         print("New round")
 
         self.player.round_1.clear()
-        self.player.round_1.clear()
+        self.player.round_1_done.clear()
         self.player.replay_queue.clear()
 
         print("Game history: ")
