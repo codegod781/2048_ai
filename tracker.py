@@ -69,7 +69,7 @@ class Tracker:
             except KeyboardInterrupt:
                 print(f"\nTerminating Tracker...")
                 tracker.stop_event.set()
-            except TimeoutError:
+            except:
                 self.online.clear()
                 pass
                 print(self.online)
