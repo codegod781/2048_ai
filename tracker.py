@@ -49,24 +49,23 @@ class Tracker:
                             pickled_list = pickle.dumps(message_to_peers) 
                             for peer in self.online:
                                 node_socket.sendto(pickled_list, (peer[0][0], peer[0][1]))
-            except:
+            except KeyboardInterrupt:
+                print(f"\nTerminating Tracker...")
+                tracker.stop_event.set()
+            except TimeoutError:
                 self.online.clear()
                 pass
-            print(self.online)
-            # time.sleep(0.1)
+                print(self.online)
+                # time.sleep(0.1)
             
 
 if __name__ == "__main__":
-    try:
-        tracker = Tracker()
-        server_address = ('127.0.0.1', 50000)
-        node_socket = socket(AF_INET, SOCK_DGRAM)
-        node_socket.bind(server_address)
-        tracker.peer_manager(node_socket)
-        while True:
-            time.sleep(1)
-
-    except KeyboardInterrupt as e:
-        print(f"Terminating Tracker...")
-        tracker.stop_event.set()
-        print(f"Tracker Terminated")
+    tracker = Tracker()
+    server_address = ('127.0.0.1', 50004)
+    node_socket = socket(AF_INET, SOCK_DGRAM)
+    node_socket.bind(server_address)
+    tracker.peer_manager(node_socket)
+    while not tracker.stop_event.is_set():
+        time.sleep(1)
+    print(f"Tracker Terminated!")
+    node_socket.close()

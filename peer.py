@@ -17,7 +17,7 @@ class Peer:
         self.player = Poker_Player()
         self.node_socket = socket(AF_INET, SOCK_DGRAM)
         self.port = self.node_socket.getsockname()[1]
-        self.tracker_address = ('127.0.0.1', 50000)
+        self.tracker_address = ('127.0.0.1', 50004)
         self.blockchain_wallet = BlockchainWallet(mining_complexity=2)
         self.connections = []
         self.playerlist = []
@@ -65,14 +65,14 @@ class Peer:
                 payload = decoded_data[1]
         
                 if header == 'TRACKER': #up-to-date list from tracker
-                    print("recieved from tracker")
+                    #print("recieved from tracker")
                     self.connections.clear()
                     self.playerlist.clear()
                     for entry in payload:
                         self.playerlist.append(entry[1])
                         if entry[0][1] != self.node_socket.getsockname()[1]:
                             self.connections.append((entry[0][0], entry[0][1]))
-                    print("list :", self.playerlist)
+                    #print("list :", self.playerlist)
 
                 if header == 'CONNECT':
                     self.new_player = True
@@ -80,7 +80,7 @@ class Peer:
                 if header == 'BLOCKCHAIN':
                     if len(self.blockchain_wallet.blockchain) == 0:
                         self.blockchain_wallet.blockchain = payload
-                        print("blockchain received")
+                        #print("blockchain received")
 
                 if header == 'PEER':
                     # print(payload)
@@ -135,7 +135,7 @@ class Peer:
             time.sleep(1.0)
             pass
 
-        print("all players have bet this round. Bets: \n",  self.player.round_1)
+        print("All players have bet this round. Bets: \n",  self.player.round_1)
 
         win =  self.player.did_you_win()
         self.broadcast_to_peers('DONE', win)
@@ -152,20 +152,21 @@ class Peer:
 
 
         print("End of round")
-        print("you now have $", self.player.money)
+        print("You now have $", self.player.money)
 
         exit = ''
         while exit != 'y' and exit != 'n':
             exit = input("Would you like to play another round (y/n): ")
-
         self.broadcast_to_peers('REPLAY', exit)
-        while len(self.player.replay_queue) < len(self.connections):
-            if exit == 'n':
-                self.node_socket.sendto(pickle.dumps('kill'), (self.node_socket.getsockname()[0],self.node_socket.getsockname()[1]))
-                return 1
-            else:
-                return 0
 
+        while len(self.player.replay_queue) < len(self.connections):
+            pass
+        if exit == 'n':
+            self.node_socket.sendto(pickle.dumps('kill'), (self.node_socket.getsockname()[0],self.node_socket.getsockname()[1]))
+            return 1
+        else:
+            return 0
+        
     def winner(self):
         for player in self.playerlist:
             if player == self.player.player_name:
@@ -230,7 +231,6 @@ if __name__ == "__main__":
         node_thread.join(timeout = 5)
         receive_thread.join(timeout = 5)
         print("Joined Threads... Exiting Program")
-        
         
     # except:
     #     node_thread.join()
