@@ -9,3 +9,4 @@ First, run tracker.py using the internal IP address and port of the virtual mach
 block.py initializes the block and has a function that mines the block.  blockchain_and_wallet_test.py is used for testing the blockchain.  blockchain_wallet.py is a class used by the peer to receive data in the form of blocks and blockchains.  main.py is responsible for running the program as a whole.  peer.py is responsible for the functionality of a peer, which includes receiving data, broadcasting data, contacting the tracker, and broadcasting bets to other players.  poker_player.py is responsible for running the poker game, including prompting input from the peers (name of players, bets, game outcome).  tracker.py contains the tracker that peers refer to get the connections of other players in the network.
 
 When players join the network, they are given $100 to start with.
+# 2048_ai
